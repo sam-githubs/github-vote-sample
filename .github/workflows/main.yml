@@ -16,6 +16,7 @@ jobs:
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
         run: |
+          ls -al
           docker build "$GITHUB_WORKSPAC/example-voting-app/vote" -f "vote/Dockerfile" -t acrgithub.azurecr.io/vote:${{ github.sha }}
       - name: Login to container registry
         env:
