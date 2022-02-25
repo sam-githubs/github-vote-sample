@@ -1,45 +1,25 @@
+name: Build a Docker image and Push it to ACR
+
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: main
+  pull_request:
+    branches: main
+
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy application
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Build image
-        id: build-image
-        env:
-          ACR_NAME: ${{ secrets.ACR_NAME }}
-        run: |
-          ls -al
-          docker build  ./vote/Dockerfile -t acrgithub.azurecr.io/vote:"${{ github.sha }}"
-      - name: Login to container registry
-        env:
-          SERVICE_PRINCIPAL_APP_ID: ${{ secrets.SERVICE_PRINCIPAL_APP_ID }}
-          SERVICE_PRINCIPAL_SECRET: ${{ secrets.SERVICE_PRINCIPAL_SECRET }}
-          SERVICE_PRINCIPAL_TENANT: ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
-          ACR_NAME: ${{ secrets.ACR_NAME }}
-        run: make registry-login
-      - name: Push image
-        env:
-          ACR_NAME: ${{ secrets.ACR_NAME }}
-        run: |
-          docker push  acrgithub.azurecr.io/vote:${{ github.sha }}
-      - name: Get AKS credentials
-        env:
-          CLUSTER_RESOURCE_GROUP_NAME: ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }}
-          CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
-        run: |
-          az aks get-credentials \
-            --resource-group $CLUSTER_RESOURCE_GROUP_NAME \
-            --name $CLUSTER_NAME \
-            --overwrite-existing
-      - name: Deploy application
-        env:
-          ACR_NAME: ${{ secrets.ACR_NAME }}
-        run: make deploy
+      - uses: actions/checkout@v2
+      
+      - uses: azure/docker-login@v1
+        with:
+          login-server: acrgithub.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - run: |
+          docker build ./vote/Dockerfile -t acrgithub.azurecr.io/vote:${{ github.sha }}
+          docker push acrgithub.azurecr.io/vote:${{ github.sha }}
