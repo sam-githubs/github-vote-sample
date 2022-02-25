@@ -12,9 +12,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Build image
+        id: build-image
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
-        run: make build
+        run: |
+          docker build "$GITHUB_WORKSPAC/vote" -f "vote/Dockerfile" -t acrgithub.azurecr.io/vote:${{ github.sha }}
       - name: Login to container registry
         env:
           SERVICE_PRINCIPAL_APP_ID: ${{ secrets.SERVICE_PRINCIPAL_APP_ID }}
@@ -25,7 +27,8 @@ jobs:
       - name: Push image
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
-        run: make push
+        run: |
+          docker push  acrgithub.azurecr.io/vote:${{ github.sha }}
       - name: Get AKS credentials
         env:
           CLUSTER_RESOURCE_GROUP_NAME: ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }}
