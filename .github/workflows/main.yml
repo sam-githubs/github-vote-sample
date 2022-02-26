@@ -47,5 +47,9 @@ jobs:
       - name: Deploy application
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
+          IMAGE_REPO: acrgithub.azurecr.io/vote
+          VERSION: ${{ github.sha }}
         run: |
+          sed -i 's|IMAGE_REPO|$(IMAGE_REPO)|g; s/VERSION/$(VERSION)/g' ./k8s-specifications/vote-deployment.yaml
+          kubectl apply -f ./k8s-specifications/vote-deployment.yaml
           kubectl get pods -n vote
