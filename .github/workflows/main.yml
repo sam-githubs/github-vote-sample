@@ -20,19 +20,19 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
       - name: build and push voting app
-#         run: |
-#           docker build ./vote/ -t acrgithub.azurecr.io/vote:${{ github.sha }}
-#           docker push acrgithub.azurecr.io/vote:${{ github.sha }}
+        run: |
+          docker build ./vote/ -t acrgithub.azurecr.io/vote:${{ github.sha }}
+          docker push acrgithub.azurecr.io/vote:${{ github.sha }}
 
       - name: build and push result app
-#         run: |
-#           docker build ./result/ -t acrgithub.azurecr.io/result:${{ github.sha }}
-#           docker push acrgithub.azurecr.io/result:${{ github.sha }}
+        run: |
+          docker build ./result/ -t acrgithub.azurecr.io/result:${{ github.sha }}
+          docker push acrgithub.azurecr.io/result:${{ github.sha }}
 
       - name: build and push worker app
-#         run: |
-#           docker build ./worker/ -t acrgithub.azurecr.io/worker:${{ github.sha }}
-#           docker push acrgithub.azurecr.io/worker:${{ github.sha }}
+        run: |
+          docker build ./worker/ -t acrgithub.azurecr.io/worker:${{ github.sha }}
+          docker push acrgithub.azurecr.io/worker:${{ github.sha }}
       - name: Get AKS credentials
         env:
           CLUSTER_RESOURCE_GROUP_NAME: ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }}
