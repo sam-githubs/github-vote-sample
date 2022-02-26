@@ -38,6 +38,12 @@ jobs:
           CLUSTER_RESOURCE_GROUP_NAME: ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }}
           CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
         run: |
+          az login \
+                --service-principal \
+                --username $(SERVICE_PRINCIPAL_APP_ID) \
+                --password $(SERVICE_PRINCIPAL_SECRET) \
+                --tenant $(SERVICE_PRINCIPAL_TENANT)
+          az acr login --name $(ACR_NAME)
           az aks get-credentials \
             --resource-group $CLUSTER_RESOURCE_GROUP_NAME \
             --name $CLUSTER_NAME \
