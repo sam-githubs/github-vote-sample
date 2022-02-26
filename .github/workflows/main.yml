@@ -50,6 +50,6 @@ jobs:
           IMAGE_REPO: acrgithub.azurecr.io/vote
           VERSION: ${{ github.sha }}
         run: |
-          sed -i s|IMAGE_REPO|$(IMAGE_REPO)|g; s/VERSION/${{ github.sha }}/g ./k8s-specifications/vote-deployment.yaml
+          sed -i 's/VERSION/${{ github.sha }}/g' ./k8s-specifications/vote-deployment.yaml
           kubectl apply -f ./k8s-specifications/vote-deployment.yaml
           kubectl get pods -n vote
