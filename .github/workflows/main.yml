@@ -72,7 +72,7 @@ jobs:
                 --tenant ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
           az aks get-credentials --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} --name  ${{ secrets.CLUSTER_NAME }} --overwrite-existing
  
-      - name: Deploy application
+      - name: Deploy vote application
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
           IMAGE_REPO: acrgithub.azurecr.io/vote
@@ -80,4 +80,24 @@ jobs:
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/vote/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/vote-deployment.yaml
           kubectl apply -f ./k8s-specifications/vote-deployment.yaml
-          kubectl get pods -n vote
+          kubectl rollout status deployment/vote -n vote
+
+      - name: Deploy result application
+        env:
+          ACR_NAME: ${{ secrets.ACR_NAME }}
+          IMAGE_REPO: acrgithub.azurecr.io/result
+          VERSION: ${{ github.sha }}
+        run: |
+          sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/result/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/result-deployment.yaml
+          kubectl apply -f ./k8s-specifications/result-deployment.yaml
+          kubectl rollout status deployment/result -n vote
+
+      - name: Deploy vote application
+        env:
+          ACR_NAME: ${{ secrets.ACR_NAME }}
+          IMAGE_REPO: acrgithub.azurecr.io/worker
+          VERSION: ${{ github.sha }}
+        run: |
+          sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/worker/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/worker-deployment.yaml
+          kubectl apply -f ./k8s-specifications/worker-deployment.yaml
+          kubectl rollout status deployment/worker -n vote
