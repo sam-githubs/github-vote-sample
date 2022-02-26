@@ -20,19 +20,19 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
       - name: build and push voting app
-        run: |
-          docker build ./vote/ -t acrgithub.azurecr.io/vote:${{ github.sha }}
-          docker push acrgithub.azurecr.io/vote:${{ github.sha }}
+#         run: |
+#           docker build ./vote/ -t acrgithub.azurecr.io/vote:${{ github.sha }}
+#           docker push acrgithub.azurecr.io/vote:${{ github.sha }}
 
       - name: build and push result app
-        run: |
-          docker build ./result/ -t acrgithub.azurecr.io/result:${{ github.sha }}
-          docker push acrgithub.azurecr.io/result:${{ github.sha }}
+#         run: |
+#           docker build ./result/ -t acrgithub.azurecr.io/result:${{ github.sha }}
+#           docker push acrgithub.azurecr.io/result:${{ github.sha }}
 
       - name: build and push worker app
-        run: |
-          docker build ./worker/ -t acrgithub.azurecr.io/worker:${{ github.sha }}
-          docker push acrgithub.azurecr.io/worker:${{ github.sha }}
+#         run: |
+#           docker build ./worker/ -t acrgithub.azurecr.io/worker:${{ github.sha }}
+#           docker push acrgithub.azurecr.io/worker:${{ github.sha }}
       - name: Get AKS credentials
         env:
           CLUSTER_RESOURCE_GROUP_NAME: ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }}
@@ -43,10 +43,7 @@ jobs:
                 --username ${{ secrets.SERVICE_PRINCIPAL_APP_ID }} \
                 --password ${{ secrets.SERVICE_PRINCIPAL_SECRET }} \
                 --tenant ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
-          az aks get-credentials \
-            --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} \
-            --name ${{ secrets.CLUSTER_NAME }} \
-            --overwrite-existing
+          az aks get-credentials --resource-group github --name Github-Sample --overwrite-existing
       - name: Deploy application
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
