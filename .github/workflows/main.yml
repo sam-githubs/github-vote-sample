@@ -43,7 +43,7 @@ jobs:
                 --username ${{ secrets.SERVICE_PRINCIPAL_APP_ID }} \
                 --password ${{ secrets.SERVICE_PRINCIPAL_SECRET }} \
                 --tenant ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
-          az aks get-credentials --resource-group github --name Github-Sample --overwrite-existing
+          az aks get-credentials --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} --name  ${{ secrets.CLUSTER_NAME }} --overwrite-existing
       - name: Deploy application
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
