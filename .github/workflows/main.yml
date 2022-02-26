@@ -40,13 +40,13 @@ jobs:
         run: |
           az login \
                 --service-principal \
-                --username $(SERVICE_PRINCIPAL_APP_ID) \
-                --password $(SERVICE_PRINCIPAL_SECRET) \
-                --tenant $(SERVICE_PRINCIPAL_TENANT)
-          az acr login --name $(ACR_NAME)
+                --username ${{ secrets.SERVICE_PRINCIPAL_APP_ID }} \
+                --password ${{ secrets.SERVICE_PRINCIPAL_SECRET }} \
+                --tenant ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
+          az acr login --name ${{ secrets.ACR_NAME }}
           az aks get-credentials \
-            --resource-group $CLUSTER_RESOURCE_GROUP_NAME \
-            --name $CLUSTER_NAME \
+            --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} \
+            --name ${{ secrets.CLUSTER_NAME }} \
             --overwrite-existing
       - name: Deploy application
         env:
