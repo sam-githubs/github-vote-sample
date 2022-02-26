@@ -43,7 +43,6 @@ jobs:
                 --username ${{ secrets.SERVICE_PRINCIPAL_APP_ID }} \
                 --password ${{ secrets.SERVICE_PRINCIPAL_SECRET }} \
                 --tenant ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
-          az acr login --name ${{ secrets.ACR_NAME }}
           az aks get-credentials \
             --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} \
             --name ${{ secrets.CLUSTER_NAME }} \
