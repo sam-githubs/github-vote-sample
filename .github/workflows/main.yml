@@ -19,7 +19,17 @@ jobs:
           login-server: acrgithub.azurecr.io
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
-
-      - run: |
+      - name: build and push voting app
+        run: |
           docker build ./vote/ -t acrgithub.azurecr.io/vote:${{ github.sha }}
           docker push acrgithub.azurecr.io/vote:${{ github.sha }}
+
+      - name: build and push result app
+        run: |
+          docker build ./result/ -t acrgithub.azurecr.io/result:${{ github.sha }}
+          docker push acrgithub.azurecr.io/result:${{ github.sha }}
+
+      - name: build and push worker app
+        run: |
+          docker build ./worker/ -t acrgithub.azurecr.io/worker:${{ github.sha }}
+          docker push acrgithub.azurecr.io/worker:${{ github.sha }}
