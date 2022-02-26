@@ -12,9 +12,9 @@ var express = require('express'),
 io.set('transports', ['polling']);
 
 var port = process.env.PORT || 8080;
-var dbUsername = process.env.POSTGRES_USER || "voting";
-var dbPassword = process.env.POSTGRES_PASSWORD || "voting";
-var dbName = process.env.POSTGRES_DB || "voting";
+var dbUsername = process.env.POSTGRES_USER || "postgres";
+var dbPassword = process.env.POSTGRES_PASSWORD || "postgres";
+var dbName = process.env.POSTGRES_DB || "postgres";
 
 io.sockets.on('connection', function (socket) {
 
