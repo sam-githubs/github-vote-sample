@@ -50,6 +50,7 @@ jobs:
     steps:
     - name: Run tests
       run: |
+       cd result
        npm i
   deploy:
     runs-on: ubuntu-latest
