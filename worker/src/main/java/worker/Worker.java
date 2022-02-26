@@ -12,7 +12,7 @@ class Worker {
       String db_username = System.getenv("POSTGRES_USER");
       String db_password = System.getenv("POSTGRES_PASSWORD");
       Jedis redis = connectToRedis("redis");
-      Connection dbConn = connectToDB("db", db_name, db_username, db_password);
+      Connection dbConn = connectToDB("db", "postgres", "postgres", "postgres");
 
       System.err.println("Watching vote queue");
 
