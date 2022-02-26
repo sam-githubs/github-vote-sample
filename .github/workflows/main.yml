@@ -33,3 +33,17 @@ jobs:
         run: |
           docker build ./worker/ -t acrgithub.azurecr.io/worker:${{ github.sha }}
           docker push acrgithub.azurecr.io/worker:${{ github.sha }}
+      - name: Get AKS credentials
+        env:
+          CLUSTER_RESOURCE_GROUP_NAME: ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }}
+          CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+        run: |
+          az aks get-credentials \
+            --resource-group $CLUSTER_RESOURCE_GROUP_NAME \
+            --name $CLUSTER_NAME \
+            --overwrite-existing
+      - name: Deploy application
+        env:
+          ACR_NAME: ${{ secrets.ACR_NAME }}
+        run: |
+          kubectl get pods -n vote
