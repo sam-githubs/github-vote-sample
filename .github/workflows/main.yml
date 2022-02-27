@@ -71,6 +71,12 @@ jobs:
                 --password ${{ secrets.SERVICE_PRINCIPAL_SECRET }} \
                 --tenant ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
           az aks get-credentials --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} --name  ${{ secrets.CLUSTER_NAME }} --overwrite-existing
+      
+      - name: Replace image in config
+        uses: ./.github/actions/replace
+        with:
+          files: vote-secret.yaml, result-secret.yaml
+          replacements: database= ${{ secrets.database }}, password= ${{ secrets.password }}, user=${{ secrets.user }}
  
       - name: Deploy vote application
         env:
@@ -79,7 +85,6 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/vote/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/vote-deployment.yaml
-          sed -i 's/database/${{ secrets.database }}/g; s/password/${{ secrets.password }}/g s/user/${{ secrets.user }}/g' ./k8s-specifications/vote-secret.yaml
           kubectl apply -f ./k8s-specifications/vote-secret.yaml
           kubectl apply -f ./k8s-specifications/vote-deployment.yaml
           kubectl rollout status deployment/vote -n vote
@@ -91,7 +96,6 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/result/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/result-deployment.yaml
-          sed -i 's/database/${{ secrets.database }}/g; s/password/${{ secrets.password }}/g s/user/${{ secrets.user }}/g' ./k8s-specifications/result-secret.yaml
           kubectl apply -f ./k8s-specifications/vote-secret.yaml
           kubectl apply -f ./k8s-specifications/result-deployment.yaml
           kubectl rollout status deployment/result -n vote
