@@ -6,7 +6,15 @@ metadata:
   name: result
   namespace: vote
 spec:
+  minReadySeconds: 5
   replicas: 1
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 300
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
   selector:
     matchLabels:
       app: result
@@ -21,6 +29,27 @@ spec:
         ports:
         - containerPort: 80
           name: result
+        resources:
+            requests:
+              cpu: 50m
+              memory: 50M
+            limits:
+              cpu: "250m"
+              memory: "250M"
         envFrom:
         - secretRef:
             name: db-creds
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: result
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: result
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+
