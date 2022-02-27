@@ -89,8 +89,8 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/result/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/result-deployment.yaml
-          sed -i 's/$database/${{ secrets.database }}/g; s/$password/${{ secrets.password }}/g; s/$user/${{ secrets.user }}/g' ./k8s-specifications/result-secret.yaml
-          kubectl apply -f ./k8s-specifications/result-secret.yaml
+          sed -i 's/$database/${{ secrets.database }}/g; s/$password/${{ secrets.password }}/g; s/$user/${{ secrets.user }}/g' ./k8s-specifications/db-secret.yaml
+          kubectl apply -f ./k8s-specifications/db-secret.yaml
           kubectl apply -f ./k8s-specifications/result-deployment.yaml
           kubectl rollout status deployment/result -n vote
 
@@ -101,7 +101,5 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/worker/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/worker-deployment.yaml
-          sed -i 's/$database/${{ secrets.database }}/g; s/$password/${{ secrets.password }}/g; s/$user/${{ secrets.user }}/g' ./k8s-specifications/worker-secret.yaml
-          kubectl apply -f ./k8s-specifications/worker-secret.yaml
           kubectl apply -f ./k8s-specifications/worker-deployment.yaml
           kubectl rollout status deployment/worker -n vote

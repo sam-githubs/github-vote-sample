@@ -23,4 +23,4 @@ spec:
           name: result
         envFrom:
         - secretRef:
-            name: result-secret
+            name: db-creds

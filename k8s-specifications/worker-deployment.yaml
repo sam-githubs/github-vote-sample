@@ -20,4 +20,4 @@ spec:
         name: worker
         envFrom:
           - secretRef:
-              name: worker-secret
+              name: db-creds
