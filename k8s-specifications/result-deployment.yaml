@@ -21,3 +21,6 @@ spec:
         ports:
         - containerPort: 80
           name: result
+        envFrom:
+        - secretRef:
+            name: result-secret

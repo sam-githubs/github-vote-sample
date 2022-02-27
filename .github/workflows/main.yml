@@ -79,6 +79,8 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/vote/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/vote-deployment.yaml
+          sed -i 's/database/${{ database }}/g; s/password/${{ password }}/g s/user/${{ user }}/g' ./k8s-specifications/vote-secret.yaml
+          kubectl apply -f ./k8s-specifications/vote-secret.yaml
           kubectl apply -f ./k8s-specifications/vote-deployment.yaml
           kubectl rollout status deployment/vote -n vote
 
@@ -89,10 +91,12 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/result/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/result-deployment.yaml
+          sed -i 's/database/${{ database }}/g; s/password/${{ password }}/g s/user/${{ user }}/g' ./k8s-specifications/result-secret.yaml
+          kubectl apply -f ./k8s-specifications/vote-secret.yaml
           kubectl apply -f ./k8s-specifications/result-deployment.yaml
           kubectl rollout status deployment/result -n vote
 
-      - name: Deploy vote application
+      - name: Deploy worker application
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
           IMAGE_REPO: acrgithub.azurecr.io/worker
