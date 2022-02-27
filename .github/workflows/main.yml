@@ -73,7 +73,7 @@ jobs:
           az aks get-credentials --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} --name  ${{ secrets.CLUSTER_NAME }} --overwrite-existing
       
       - name: Replace image in config
-        uses: ./.github/actions/replace
+        uses: datamonsters/replace-action@v2
         with:
           files: vote-secret.yaml, result-secret.yaml
           replacements: database= ${{ secrets.database }}, password= ${{ secrets.password }}, user=${{ secrets.user }}
