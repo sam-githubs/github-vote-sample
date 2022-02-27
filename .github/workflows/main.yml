@@ -75,7 +75,7 @@ jobs:
       - name: Replace image in config
         uses: datamonsters/replace-action@v2
         with:
-          files: vote-secret.yaml, result-secret.yaml
+          files: ./k8s-specifications/vote-secret.yaml, ./k8s-specifications/result-secret.yaml
           replacements: database= ${{ secrets.database }}, password=${{ secrets.password }}, user=${{ secrets.user }}
  
       - name: Deploy vote application
