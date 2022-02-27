@@ -76,7 +76,7 @@ jobs:
         uses: datamonsters/replace-action@v2
         with:
           files: vote-secret.yaml, result-secret.yaml
-          replacements: database= ${{ secrets.database }}, password= ${{ secrets.password }}, user=${{ secrets.user }}
+          replacements: database= ${{ secrets.database }}, password=${{ secrets.password }}, user=${{ secrets.user }}
  
       - name: Deploy vote application
         env:
