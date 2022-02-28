@@ -1,10 +1,37 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: db
   name: db
-  namespace: vote
 spec:
   replicas: 1
   selector:
@@ -16,19 +43,18 @@ spec:
         app: db
     spec:
       containers:
-      - image: postgres:9.4
-        name: postgres
-        env:
-        - name: POSTGRES_USER
-          value: postgres
-        - name: POSTGRES_PASSWORD
-          value: postgres
-        ports:
-        - containerPort: 5432
-          name: postgres
-        volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          name: db-data
+        - name: postgres
+          image: postgres:9.4
+          envFrom:
+          - secretRef:
+              name: db-creds
+          ports:
+          - containerPort: 5432
+            name: postgres
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
       volumes:
-      - name: db-data
-        emptyDir: {} 
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim

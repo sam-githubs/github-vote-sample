@@ -72,14 +72,21 @@ jobs:
                 --tenant ${{ secrets.SERVICE_PRINCIPAL_TENANT }}
           az aks get-credentials --resource-group ${{ secrets.CLUSTER_RESOURCE_GROUP_NAME }} --name  ${{ secrets.CLUSTER_NAME }} --overwrite-existing
  
-      - name: Deploy vote application
+      - name: Deploy vote/database/redis application
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
           IMAGE_REPO: acrgithub.azurecr.io/vote
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/vote/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/vote-deployment.yaml
+          sed -i 's/$database/${{ secrets.database }}/g; s/$password/${{ secrets.password }}/g; s/$user/${{ secrets.user }}/g' ./k8s-specifications/db-secret.yaml
+          kubectl apply -f ./k8s-specifications/db-secret.yaml
+          kubectl apply -f ./k8s-specifications/db-deployment.yaml
+          kubectl apply -f ./k8s-specifications/db-service.yaml    
+          kubectl apply -f ./k8s-specifications/redis-deployment.yaml
+          kubectl apply -f ./k8s-specifications/redis-service.yaml    
           kubectl apply -f ./k8s-specifications/vote-deployment.yaml
+          kubectl apply -f ./k8s-specifications/vote-service.yaml
           kubectl rollout status deployment/vote -n vote
 
       - name: Deploy result application
@@ -89,9 +96,9 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/result/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/result-deployment.yaml
-          sed -i 's/$database/${{ secrets.database }}/g; s/$password/${{ secrets.password }}/g; s/$user/${{ secrets.user }}/g' ./k8s-specifications/db-secret.yaml
-          kubectl apply -f ./k8s-specifications/db-secret.yaml
+          kubectl apply -f ./k8s-specifications/vote-namespace.yaml
           kubectl apply -f ./k8s-specifications/result-deployment.yaml
+          kubectl apply -f ./k8s-specifications/result-service.yaml
           kubectl rollout status deployment/result -n vote
 
       - name: Deploy worker application
@@ -102,4 +109,6 @@ jobs:
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/worker/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/worker-deployment.yaml
           kubectl apply -f ./k8s-specifications/worker-deployment.yaml
+          kubectl apply -f ./k8s-specifications/result-service.yaml
           kubectl rollout status deployment/worker -n vote
+          kubectl get svc -n vote
