@@ -1,34 +1,31 @@
-kind: PersistentVolume
 apiVersion: v1
+kind: PersistentVolume
 metadata:
-  name: postgres-pv-volume
+  name: log-volume
   namespace: vote
   labels:
     type: local
-    app: postgres
 spec:
   storageClassName: manual
   capacity:
-    storage: 5Gi
+    storage: 1Gi
   accessModes:
     - ReadWriteMany
   hostPath:
     path: "/mnt/data"
 ---
-kind: PersistentVolumeClaim
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: postgres-pv-claim
   namespace: vote
-  labels:
-    app: postgres
 spec:
-  storageClassName: manual
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
+  storageClassName: manual
 ---
 apiVersion: apps/v1
 kind: Deployment
