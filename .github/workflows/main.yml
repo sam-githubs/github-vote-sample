@@ -96,7 +96,7 @@ jobs:
           VERSION: ${{ github.sha }}
         run: |
           sed -i 's/IMAGE_REPO/acrgithub.azurecr.io\/result/g; s/VERSION/${{ github.sha }}/g' ./k8s-specifications/result-deployment.yaml
-          kubectl apply -f ./k8s-specifications/vote-namespace.yaml
+          kubectl apply -f ./k8s-specifications/vote-namespace.yml
           kubectl apply -f ./k8s-specifications/result-deployment.yaml
           kubectl apply -f ./k8s-specifications/result-service.yaml
           kubectl rollout status deployment/result -n vote
