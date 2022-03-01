@@ -1,54 +1,11 @@
 Example Voting App
 =========
+Run Vagrant 
 
-A simple distributed application running across multiple Docker containers.
+cd vagrant-kubernetes 
 
-Getting started
----------------
+Review Readme file for how to run k8s using vagrant with pre-installed vagrant and virtualbox and sample deployment
 
-Download [Docker Desktop](https://www.docker.com/products/docker-desktop) for Mac or Windows. [Docker Compose](https://docs.docker.com/compose) will be automatically installed. On Linux, make sure you have the latest version of [Compose](https://docs.docker.com/compose/install/). 
-
-
-## Linux Containers
-
-The Linux stack uses Python, Node.js, .NET Core (or optionally Java), with Redis for messaging and Postgres for storage.
-
-> If you're using [Docker Desktop on Windows](https://store.docker.com/editions/community/docker-ce-desktop-windows), you can run the Linux version by [switching to Linux containers](https://docs.docker.com/docker-for-windows/#switch-between-windows-and-linux-containers), or run the Windows containers version.
-
-Run in this directory:
-```
-docker-compose up
-```
-The app will be running at [http://localhost:5000](http://localhost:5000), and the results will be at [http://localhost:5001](http://localhost:5001).
-
-Alternately, if you want to run it on a [Docker Swarm](https://docs.docker.com/engine/swarm/), first make sure you have a swarm. If you don't, run:
-```
-docker swarm init
-```
-Once you have your swarm, in this directory run:
-```
-docker stack deploy --compose-file docker-stack.yml vote
-```
-
-## Windows Containers
-
-An alternative version of the app uses Windows containers based on Nano Server. This stack runs on .NET Core, using [NATS](https://nats.io) for messaging and [TiDB](https://github.com/pingcap/tidb) for storage.
-
-You can build from source using:
-
-```
-docker-compose -f docker-compose-windows.yml build
-```
-
-Then run the app using:
-
-```
-docker-compose -f docker-compose-windows.yml up -d
-```
-
-> Or in a Windows swarm, run `docker stack deploy -c docker-stack-windows.yml vote`
-
-The app will be running at [http://localhost:5000](http://localhost:5000), and the results will be at [http://localhost:5001](http://localhost:5001).
 
 
 Run the app in Kubernetes
@@ -56,8 +13,65 @@ Run the app in Kubernetes
 
 The folder k8s-specifications contains the yaml specifications of the Voting App's services.
 
+Create AKS (azure k8s cluster) and ACR (azure container registery) get credentials 
+1. Open up your AKS cluster in the azure portal (portal.azure.com)
+2. Create aks cluster with access perimission to acr and login to azure with az login
+3. get access keys from acr ( ACR_NAME, ACR_PASSWORD, ACR_USERNAME) to github secrets in the repo
+4. we need to allow remote access to aks so we need to create the service principal
+    a. az ad sp create-for-rbac \
+    --name upgrade-test \
+    --skip-assignment
+    b. Create a secret called SERVICE_PRINCIPAL_APP_ID and add the az ad sp create-for-rbac output value appId
+    c. Create a secret called SERVICE_PRINCIPAL_SECRET and add the az ad sp create-for-rbac output value password
+    d. Create a secret called SERVICE_PRINCIPAL_TENANT and add the az ad sp create-for-rbac output value tenant
+    e. Create a secret named CLUSTER_RESOURCE_GROUP_NAME with the name of the resource group of the AKS cluster created above ($RG)
+    f. Create a secret named CLUSTER_NAME with the name of the AKS cluster created above ($CLUSTER)
+    g. Create a secret named ACR_NAME with the name of the container registry ($ACR)
+Now we need to give this service principal a few more permissions. First, grant it the ability to push an image to the container registry:
+ az role assignment create \
+    --role AcrPush \
+    --assignee-principal-type ServicePrincipal \
+    --assignee-object-id $(az ad sp show \
+        --id $SERVICE_PRINCIPAL_APP_ID \
+        --query objectId -o tsv) \
+    --scope $(az acr show --name $ACR --query id -o tsv)
+
+That command grants the service principal the AcrPush role for the container registry that was created above.
+
+Grant the service principal the ability to retrieve the credentials of the AKS cluster (az aks get-credentials):
+
+$ az role assignment create \
+    --role "Azure Kubernetes Service Cluster User Role" \
+    --assignee-principal-type ServicePrincipal \
+    --assignee-object-id $(az ad sp show \
+        --id $SERVICE_PRINCIPAL_APP_ID \
+        --query objectId -o tsv) \
+    --scope $(az aks show \
+        --resource-group $RG \
+        --name $CLUSTER \
+        --query id -o tsv)
+
+
+we want to grant this service principal the ability to read and write to the default namespace. 
+az role assignment create \
+    --role "Azure Kubernetes Service RBAC Writer" \
+    --assignee-principal-type ServicePrincipal \
+    --assignee-object-id $(az ad sp show \
+        --id $SERVICE_PRINCIPAL_APP_ID \
+        --query objectId -o tsv) \
+    --scope "$(az aks show \
+        --resource-group $RG \
+        --name $CLUSTER \
+        --query id -o tsv)/namespaces/default"
+
+
+after collecting all of the info above add all needed to secrets ( CLUSTER_NAME, CLUSTER_RESOURCE_GROUP_NAME, SERVICE_PRINCIPAL_APP_ID, SERVICE_PRINCIPAL_SECRET, SERVICE_PRINCIPAL_TENANT)
+
+
 First create the vote namespace
 
+```
+For database: add secrets USER, DATABASE, PASSWORD  in base64 encode
 ```
 $ kubectl create namespace vote
 ```
@@ -78,23 +92,7 @@ deployment "worker" created
 
 The vote interface is then available on port 31000 on each host of the cluster, the result one is available on port 31001.
 
-Architecture
+In Case of Vagrant
 -----
-
-![Architecture diagram](architecture.png)
-
-* A front-end web app in [Python](/vote) or [ASP.NET Core](/vote/dotnet) which lets you vote between two options
-* A [Redis](https://hub.docker.com/_/redis/) or [NATS](https://hub.docker.com/_/nats/) queue which collects new votes
-* A [.NET Core](/worker/src/Worker), [Java](/worker/src/main) or [.NET Core 2.1](/worker/dotnet) worker which consumes votes and stores them in…
-* A [Postgres](https://hub.docker.com/_/postgres/) or [TiDB](https://hub.docker.com/r/dockersamples/tidb/tags/) database backed by a Docker volume
-* A [Node.js](/result) or [ASP.NET Core SignalR](/result/dotnet) webapp which shows the results of the voting in real time
-
-
-Notes
------
-
-The voting application only accepts one vote per client. It does not register votes if a vote has already been submitted from a client.
-
-This isn't an example of a properly architected perfectly designed distributed app... it's just a simple 
-example of the various types of pieces and languages you might see (queues, persistent data, etc), and how to 
-deal with them in Docker at a basic level. 
+Create secret with ACR creds to access the container register 
+Replace loadbalancer with nodeport and use default up allocated in vagrant 10.0.0.10 to access services in case of aks loadbalancer, for production cluster ip is recommended.
